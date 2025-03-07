@@ -3,28 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Получение данных</title>
+    <title>Отправка данных</title>
 </head>
 <body>
 
-<h2>Получение данных</h2>
-<form>
-    <label for="receivedMessage">Сообщение:</label>
-    <textarea id="receivedMessage" name="receivedMessage" readonly></textarea>
+<h2>Отправка данных</h2>
+<form id="dataForm">
+    <label for="message">Сообщение:</label>
+    <textarea id="message" name="message" required></textarea>
+    <br>
+    <button type="submit">Отправить</button>
 </form>
+<p id="error-message" style="color: red; display: none;">Произошла ошибка при отправке данных.</p>
 
 <script>
-    // Получаем данные из localStorage
-    const message = localStorage.getItem('message');
+    document.getElementById('dataForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Предотвращаем стандартное поведение формы
 
-    // Отображаем данные в поле textarea
-    if (message) {
-        document.getElementById('receivedMessage').value = message;
+        const message = document.getElementById('message').value;
 
-        // Очистить localStorage
-        localStorage.removeItem('message');
-    }
+        // Сохраняем данные в localStorage
+        localStorage.setItem('message', message);
+
+        // Отправляем данные на второй сайт
+        fetch('https://second-site-url.com/api/submit-data', { // Замените на URL второго сайта
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message: message }),
+            mode: 'cors'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Ошибка при отправке данных');
+            }
+            return response.json();
+        })
+        .then(result => {
+            console.log('Данные успешно отправлены', result);
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            document.getElementById('error-message').style.display = 'block'; // Показываем сообщение об ошибке
+        });
+    });
 </script>
 
 </body>
 </html>
+
